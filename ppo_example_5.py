@@ -79,6 +79,7 @@ PPO (Proximal Policy Optimization) 强化学习算法实现
 - 训练过程中的奖励曲线
 - 保存的模型文件
 - 每个episode的仿真结果图
+----------文件保存在了：C:\研究生\03设备信息\myRIO\DLL文件 - 参数\加入强化学习6\算法文件夹\episode_plots_ppo_mp
 """
 def run_single_environment(env_id, experience_queue, action_queues, state_queues, worker_args):
     dll_path = worker_args['dll_path']  # DLL文件路径
@@ -184,7 +185,7 @@ def run_single_environment(env_id, experience_queue, action_queues, state_queues
 
         # 📌【日志位置 2】：首次调用 DLL 后添加初始欧拉角
         print(f"[Worker {env_id}] Step 0: 初始欧拉角 = {initial_euler_angles}")
-
+        last_update_step = 0  # 初始化上次更新的步数
         # 遍历每个时间步
         for step in range(steps_per_episode):
             try:
@@ -211,7 +212,7 @@ def run_single_environment(env_id, experience_queue, action_queues, state_queues
                 # 打印接收动作失败的错误信息
                 print(f"[Worker {env_id}] 接收动作失败: {e}")
                 break
-            last_update_step = 0  # 初始化上次更新的步数
+            
             target_action = current_input_array[0].copy()  # 初始化目标动作为当前输入
                     # 对动作进行裁剪，确保其在指定范围内，并重塑为(1, -1)形状
             next_input_array_sim = np.clip(action, [0, 0, 0, -10, -10, 0], [0, 0, 0, 10, 10, 0]).reshape(1, -1)
@@ -227,7 +228,12 @@ def run_single_environment(env_id, experience_queue, action_queues, state_queues
                     delta = next_input_array_sim[0] - target_action
                     delta = np.clip(delta, -5.0, 5.0)  # 最大变化不超过 ±1
                     target_action += delta
+                    print(f"Worker {env_id}: last_update_step = {last_update_step}，step={step}")
                     last_update_step = step
+                    # 在last_update_step = step这行代码后添加
+                    
+                else:
+                    print(f"没更新差值")
 
             # 应用当前的目标动作
             next_input_array_sim[0] = target_action.copy()
