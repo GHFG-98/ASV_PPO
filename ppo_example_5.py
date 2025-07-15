@@ -10,7 +10,7 @@ import copy
 
 # --- 配置参数 ---
 DLL_PATH = r'c:\研究生\03设备信息\myRIO\DLL文件 - 参数\Dll3\x64\Debug\Dll1.dll'  # DLL文件路径
-TOTAL_TRAINING_STEPS = 80000  # 总训练步数
+TOTAL_TRAINING_STEPS = 8000000  # 总训练步数
 STEPS_PER_EPISODE = 6000  # 每个episode的步数
 TIME_STEP = 0.02  # 时间步长
 SAVE_PLOT_EVERY_EPISODES = 50  # 每隔多少个episode保存一次图像
@@ -228,12 +228,12 @@ def run_single_environment(env_id, experience_queue, action_queues, state_queues
                     delta = next_input_array_sim[0] - target_action
                     delta = np.clip(delta, -5.0, 5.0)  # 最大变化不超过 ±1
                     target_action += delta
-                    print(f"Worker {env_id}: last_update_step = {last_update_step}，step={step}")
+                    # print(f"Worker {env_id}: last_update_step = {last_update_step}，step={step}")
                     last_update_step = step
                     # 在last_update_step = step这行代码后添加
                     
-                else:
-                    print(f"没更新差值")
+                # else:
+                #     print(f"没更新差值")
 
             # 应用当前的目标动作
             next_input_array_sim[0] = target_action.copy()
