@@ -523,8 +523,8 @@ if __name__ == '__main__':
                     input_data = experience['input_data']  # 提取 input 数据
 
                     # 📌【日志位置 5】：主进程中接收数据后打印欧拉角数据
-                    print(f"Episode {total_episodes_completed_main} 的欧拉角数据 (形状: {euler_angles_data.shape}):")
-                    print(euler_angles_data[:5])  # 打印前5行数据
+                    # print(f"Episode {total_episodes_completed_main} 的欧拉角数据 (形状: {euler_angles_data.shape}):")
+                    # print(euler_angles_data[:5])  # 打印前5行数据
 
                     if total_episodes_completed_main % SAVE_PLOT_EVERY_EPISODES == 0:  # 检查是否需要保存绘图
                        output_dir = os.path.join(PLOT_DIR, 'episode_outputs')  # 构建输出目录路径
@@ -548,8 +548,8 @@ if __name__ == '__main__':
                        print(f"Episode {total_episodes_completed_main} 的数据已保存到: {output_dir}")  # 打印数据保存路径
 
                        # 📌【日志位置 6】：保存图像和 CSV 前打印欧拉角数据
-                    print(f"保存 Episode {total_episodes_completed_main} 的欧拉角数据 (形状: {euler_angles_data.shape}):")
-                    print(euler_angles_data[:5])
+                    # print(f"保存 Episode {total_episodes_completed_main} 的欧拉角数据 (形状: {euler_angles_data.shape}):")
+                    # print(euler_angles_data[:5])
                 else:
                     state, action, log_prob, reward, next_state, done, worker_id = experience  # 从经验队列中获取经验数据
 
@@ -564,6 +564,11 @@ if __name__ == '__main__':
                     all_episode_rewards.append(current_episode_rewards_agg[worker_id])  # 记录当前集数的奖励
                     avg_reward = np.mean(all_episode_rewards[-50:])  # 计算最近50个集数的平均奖励
                     print(f"Total Steps: {main_process_total_steps}/{TOTAL_TRAINING_STEPS}, Worker {worker_id} Episode Finished. Reward: {current_episode_rewards_agg[worker_id]:.2f}, Steps: {current_episode_steps_agg[worker_id]}, Avg Reward (last 50): {avg_reward:.2f}")  # 打印当前集数的训练信息
+                    
+                    # 保存平均奖励数据到CSV文件
+                    avg_rewards_file = os.path.join(PLOT_DIR, "avg_rewards_all.csv")
+                    with open(avg_rewards_file, 'a') as f:
+                        f.write(f"{total_episodes_completed_main},{avg_reward}\n")
                     current_episode_rewards_agg[worker_id] = 0.0  # 重置当前集数的奖励
                     current_episode_steps_agg[worker_id] = 0  # 重置当前集数的步数
 
