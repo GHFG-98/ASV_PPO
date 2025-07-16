@@ -215,6 +215,10 @@ def run_single_environment(env_id, experience_queue, action_queues, state_queues
             
             target_action = current_input_array[0].copy()  # 初始化目标动作为当前输入
                     # 对动作进行裁剪，确保其在指定范围内，并重塑为(1, -1)形状
+            # 100轮后添加随机干扰
+            if main_process_episode_count > 100:
+                noise = np.random.uniform(-2, 2, 2)  # 为第4、5个参数生成随机干扰
+                action[3:5] += noise
             next_input_array_sim = np.clip(action, [0, 0, 0, -10, -10, 0], [0, 0, 0, 10, 10, 0]).reshape(1, -1)
 
             # 如果是第一个时间步，初始化前一个输入数组
@@ -569,6 +573,11 @@ if __name__ == '__main__':
                     avg_rewards_file = os.path.join(PLOT_DIR, "avg_rewards_all.csv")
                     with open(avg_rewards_file, 'a') as f:
                         f.write(f"{total_episodes_completed_main},{avg_reward}\n")
+                    
+                    if main_process_episode_count > 100:
+                        noise_file = os.path.join(PLOT_DIR, "noise_data_all.csv")
+                        with open(noise_file, 'a') as f:
+                            f.write(f"{total_episodes_completed_main},{action[3]},{action[4]}\n")
                     current_episode_rewards_agg[worker_id] = 0.0  # 重置当前集数的奖励
                     current_episode_steps_agg[worker_id] = 0  # 重置当前集数的步数
 
