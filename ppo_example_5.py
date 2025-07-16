@@ -39,6 +39,7 @@ OUTPUT_SIZE_CONST = 6  # DLL输出维度
 EULER_DEADZONE = 360  # 欧拉角死区
 ANGULAR_VELOCITY_DEADZONE = 100  # 角速度死区
 MAX_OUTPUT_VALUE = 1e3  # 最大输出值
+total_episodes_completed_main = 0  # 初始化主进程完成的总集数
 # CUDA设置
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
@@ -216,8 +217,9 @@ def run_single_environment(env_id, experience_queue, action_queues, state_queues
             target_action = current_input_array[0].copy()  # 初始化目标动作为当前输入
                     # 对动作进行裁剪，确保其在指定范围内，并重塑为(1, -1)形状
             # 100轮后添加随机干扰
-            if main_process_episode_count > 100:
+            if total_episodes_completed_main > 100:
                 noise = np.random.uniform(-2, 2, 2)  # 为第4、5个参数生成随机干扰
+                print(f"Generated noise: {noise}")  # 打印噪声值
                 action[3:5] += noise
             next_input_array_sim = np.clip(action, [0, 0, 0, -10, -10, 0], [0, 0, 0, 10, 10, 0]).reshape(1, -1)
 
@@ -497,7 +499,7 @@ if __name__ == '__main__':
         print(f"Worker {i} started.")  # 打印工作进程启动信息
 
     collected_timesteps_since_update = 0  # 初始化自上次更新以来收集的时间步数
-    total_episodes_completed_main = 0  # 初始化主进程完成的总集数
+    
     current_episode_rewards_agg = [0.0] * NUM_ENVIRONMENTS  # 初始化当前集的奖励聚合列表
     current_episode_steps_agg = [0] * NUM_ENVIRONMENTS  # 初始化当前集的时间步聚合列表
 
@@ -574,7 +576,7 @@ if __name__ == '__main__':
                     with open(avg_rewards_file, 'a') as f:
                         f.write(f"{total_episodes_completed_main},{avg_reward}\n")
                     
-                    if main_process_episode_count > 100:
+                    if total_episodes_completed_main > 100:
                         noise_file = os.path.join(PLOT_DIR, "noise_data_all.csv")
                         with open(noise_file, 'a') as f:
                             f.write(f"{total_episodes_completed_main},{action[3]},{action[4]}\n")
